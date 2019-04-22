@@ -8,6 +8,7 @@ class ViewController: NSViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
     webView.navigationDelegate = self
+    webView.configuration.preferences.setValue(true, forKey: "developerExtrasEnabled")
   }
 
   override func viewDidAppear() {
