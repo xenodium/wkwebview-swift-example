@@ -11,6 +11,20 @@ class ViewController: NSViewController {
     webView.configuration.preferences.setValue(true, forKey: "developerExtrasEnabled")
   }
 
+  override func viewWillAppear() {
+    super.viewWillAppear()
+    if URLFlag() == nil {
+      let alert: NSAlert = NSAlert()
+      alert.messageText = "Error"
+      alert.informativeText = "No URL to open"
+      alert.addButton(withTitle: "OK")
+      alert.alertStyle = .critical
+      if alert.runModal() == .alertFirstButtonReturn  {
+        NSApplication.shared.terminate(self)
+      }
+      return
+    }
+  }
   override func viewDidAppear() {
     super.viewDidAppear()
 
@@ -75,6 +89,28 @@ extension ViewController: WKNavigationDelegate {
 
   func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
     print("Did finish loading")
+  func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction,
+               decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+    guard let url = navigationAction.request.url else {
+      decisionHandler(.cancel)
+      return
+    }
+
+    if url.absoluteString.starts(with: "file:///var") {
+      decisionHandler(.allow)
+      return
+    }
+
+    decisionHandler(.cancel)
+
+    // Anything else open externally.
+    if !NSWorkspace.shared.open(url) {
+      let alert: NSAlert = NSAlert()
+      alert.messageText = "Could not open"
+      alert.informativeText = "Could not open \(url)"
+      alert.addButton(withTitle: "OK")
+      alert.runModal()
+    }
   }
 }
 
